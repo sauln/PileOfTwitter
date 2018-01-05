@@ -185,95 +185,21 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],2:[function(require,module,exports){
-var sentiment = require('sentiment');
+var smear = require('./smear.js');
 
-console.log("We start now");
-
-var getHTML = function ( url, callback ) {
-
-    // Feature detection
-    if ( !window.XMLHttpRequest ) return;
-
-    // Create new request
-    var xhr = new XMLHttpRequest();
-
-    // Setup callback
-    xhr.onload = function() {
-        if ( callback && typeof( callback ) === 'function' ) {
-            callback( this.responseXML );
-        }
-    }
-
-    // Get the HTML
-    xhr.open( 'GET', url );
-    xhr.responseType = 'document';
-    xhr.send();
-
-};
-
-var smear = function (fullnameSpan) {
-  // Add poop emoji to the twitter user
-
-  pooBadge = '<span class="Emoji Emoji--forLinks" style="background-image:url(\'https://abs.twimg.com/emoji/v2/72x72/1f4a9.png\')" title="Pile of poo" aria-label="Emoji: Pile of poo">&nbsp;</span><span class="visuallyhidden" aria-hidden="true">💩</span>';
-
-  fullnameSpan.innerHTML = pooBadge + fullnameSpan.innerHTML + pooBadge;
-};
-
-var tweetToText = function (tweet) {
-  console.log("Score tweet: " + tweet.innerText);
-  return tweet.innerText.toString();
-}
-
-var generateScore = function (userContent) {
-  // Process raw tweets and generate an average score
-
-  tweets = userContent.querySelectorAll(".tweet-text");
-
-  var sum = [].reduce.call(tweets, function(total, tweet) {
-    var score = sentiment(tweetToText(tweet))["score"];
-    return total + score;
-  }, 0);
-
-  var score = sum / tweets.length;
-
-
-  // var totalScore = 0
-  // for (i = 0; i < tweets.length; i++) {
-  //   tweetText = tweetToText(tweets[i]);
-  //   totalScore += sentiment(tweetText)["score"];
-  // }
-  // var score = totalScore / tweets.length;
-
-  console.log("The average score for all the tweets is: " + score);
-  return score;
-};
-
-var smearUser = function (fullUser) {
-  // Access user tweets, compute a sentiment score, and then smear
-  // user if score is low enough.
-
-  href = fullUser.href;
-
-  var parseContent = function (userPage) {
-    var tweetScore = generateScore(userPage);
-
-    if (tweetScore <= 0) {
-      username = stream.querySelector(".fullname");
-      smear(username);
-      console.log("New name for the user is: " + username.innerHTML);
-    }
-  };
-
-  getHTML(href, parseContent);
-}
+console.log("Begin Smearing");
 
 stream = document.querySelector(".stream");
 
-fullUser = stream.querySelector(".account-group");
+allTweeters = stream.querySelectorAll(".account-group");
 
-smearUser(fullUser);
+allTweeters.forEach(smear.smearUser);
 
-},{"sentiment":4}],3:[function(require,module,exports){
+// smear.smearUser(fullUser);
+
+console.log("Finish Smearing");
+
+},{"./smear.js":6}],3:[function(require,module,exports){
 module.exports={
     "😂": 1,
     "❤": 3,
@@ -4526,6 +4452,79 @@ module.exports = function(input) {
         .replace(/\n/g, ' ')
         .replace(/[.,\/#!$%\^&\*;:{}=_`\"~()]/g, '')
         .split(' ');
+};
+
+},{}],6:[function(require,module,exports){
+var sentiment = require('sentiment');
+var utils = require('./utils.js');
+
+var addPoo = function (fullnameSpan) {
+  // Add poop emoji to the twitter user
+
+  pooBadge = '<span class="Emoji Emoji--forLinks" style="background-image:url(\'https://abs.twimg.com/emoji/v2/72x72/1f4a9.png\')" title="Pile of poo" aria-label="Emoji: Pile of poo">&nbsp;</span><span class="visuallyhidden" aria-hidden="true">💩</span>';
+
+  fullnameSpan.innerHTML = pooBadge + fullnameSpan.innerHTML + pooBadge;
+};
+
+var tweetToText = function (tweet) {
+  return tweet.innerText.toString();
+}
+
+var generateScore = function (userContent) {
+  // Process raw tweets and generate an average score
+
+  tweets = userContent.querySelectorAll(".tweet-text");
+
+  var sum = [].reduce.call(tweets, function(total, tweet) {
+    var score = sentiment(tweetToText(tweet))["score"];
+    return total + score;
+  }, 0);
+
+  var score = sum / tweets.length;
+
+  console.log("The average score for all the tweets is: " + score);
+  return score;
+};
+
+exports.smearUser = function (fullUser) {
+  // Access user tweets, compute a sentiment score, and then smear
+  // user if score is low enough.
+
+  var href = fullUser.href;
+
+  var parseContent = function (userPage) {
+    var tweetScore = generateScore(userPage);
+
+    if (tweetScore <= 0) {
+      username = userPage.querySelector(".fullname");
+      addPoo(username);
+    }
+  };
+
+  utils.getHTML(href, parseContent);
+};
+
+},{"./utils.js":7,"sentiment":4}],7:[function(require,module,exports){
+exports.getHTML = function ( url, callback ) {
+
+    // Feature detection
+    if ( !window.XMLHttpRequest ) return;
+
+    // Create new request
+    var xhr = new XMLHttpRequest();
+
+    // Setup callback
+    xhr.onload = function() {
+        if ( callback && typeof( callback ) === 'function' ) {
+            callback( this.responseXML );
+        }
+    }
+
+    // Get the HTML
+    xhr.open( 'GET', url );
+    xhr.responseType = 'document';
+    xhr.send();
+
 };
 
 },{}]},{},[2]);

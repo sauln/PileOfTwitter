@@ -4442,31 +4442,15 @@ module.exports = function(input) {
 },{}],5:[function(require,module,exports){
 var tracker = require("./tweetTracker.js");
 
-console.log("BEGIN SMEARING");
-
 tracker.update();
-
 
 // Watch for page mutations, compute smear on these new tweets
 var obs = new MutationObserver(function (mutations, observer) {
-  console.log("mutation trigger - update ----- ");
+  // console.log("mutation trigger - update ----- ");
   tracker.update();
-  // smeared.update();
-  // newTweeters = getListOfPotentialTweets();
-  // console.log("Found " + newTweeters.length + " tweets after a mutation");
-
-  // if (newTweeters.length > smearedTweets.length){
-  //   console.log("New ones");
-  //   smearedTweets.append(newTweeters);
-  // }
-
-  // smearTweeters(allTweeters);
 });
 
 obs.observe(document.body, { childList: true, subtree: true, attributes: false, characterData: false });
-
-
-console.log("FINISH SMEARING");
 
 },{"./tweetTracker.js":7}],6:[function(require,module,exports){
 var sentiment = require('sentiment');
@@ -4475,6 +4459,9 @@ var userCache = require('./userCache.js');
 
 var THRESHOLD = 0.5;
 var LOG = false;
+
+// TODO: I want to wrap all these functions into an object, but they can't call
+// each other.. this is window. How do you do this properly?
 
 
 var addPoo =  function(fullnameSpan) {
@@ -4524,9 +4511,8 @@ var smearUser = function(userPage, tweetScore) {
 
     username = userPage.querySelector(".fullname");
 
-    if (LOG) {
-      console.log("Score " + tweetScore + " - smear user " + username.innerHTML);
-    }
+    console.log("Score " + tweetScore + " - smear user " + username.innerHTML);
+
 
     if (!userPage.classList.contains("smeared")) {
       userPage.classList.add("smeared");
@@ -4575,19 +4561,15 @@ exports.checkUser = function(userInfo) {
       // otherwise, generate the score
       utils.getHTML(href, function(userPage) {
 
-        if (LOG) {
-
-        }
-
         // we should check cache again right here in case we've done this before
         if (userCache.isInCache(userID)) {
           smearUser(userInfo, userCache.getValue(userID));
         } else {
+
           var tweetScore = generateScore(userPage);
 
           if (LOG) {
-            console.log(" ---- generate score: ");
-            console.log("  --------- " + tweetScore);
+            console.log(" ---- generated score: " + tweetScore);
           }
 
           userCache.addToCache(userID, tweetScore);
@@ -4666,6 +4648,7 @@ module.exports = {
 };
 
 },{"./smear.js":6}],8:[function(require,module,exports){
+
 var LOG = false;
 
 
@@ -4676,18 +4659,21 @@ module.exports = {
       console.log("Check if " + key + " is in the cache");
     }
 
+    // yes, this is redundant. but it is clear. especially when you don't totally understand JS truthy stuft
     if (key in this) {
       return true;
     } else {
       return false;
     }
   },
+
   getValue: function (key) {
     if (LOG) {
       console.log("Get value of " + key + " from the cache: " + this[key]);
     }
     return this[key];
   },
+
   addToCache: function (key, value) {
     if (LOG) {
       console.log("Add (" + key + ":" + value + ") to the cache");

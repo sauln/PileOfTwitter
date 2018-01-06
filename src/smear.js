@@ -56,9 +56,8 @@ var smearUser = function(userPage, tweetScore) {
 
     username = userPage.querySelector(".fullname");
 
-    if (LOG) {
-      console.log("Score " + tweetScore + " - smear user " + username.innerHTML);
-    }
+    console.log("Score " + tweetScore + " - smear user " + username.innerHTML);
+
 
     if (!userPage.classList.contains("smeared")) {
       userPage.classList.add("smeared");

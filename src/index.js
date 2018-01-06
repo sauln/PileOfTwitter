@@ -1,12 +1,12 @@
 var smear = require('./smear.js');
 
-console.log("Begin Smearing");
+console.log("BEGIN SMEARING");
 
 stream = document.querySelector(".stream");
 
 allTweeters = stream.querySelectorAll(".account-group");
-console.log("Compute ShitScore for " + allTweeters.length + " accounts.");
+console.log("   Compute ShitScore for " + allTweeters.length + " accounts.");
 
 allTweeters.forEach(smear.checkUser);
 
-console.log("Finish Smearing");
+console.log("FINISH SMEARING");

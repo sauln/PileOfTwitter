@@ -1,4 +1,4 @@
-exports.getHTML = function ( url, callback ) {
+exports.getHTML = function ( url, callback, obj ) {
 
     // Feature detection
     if ( !window.XMLHttpRequest ) return;
@@ -9,7 +9,7 @@ exports.getHTML = function ( url, callback ) {
     // Setup callback
     xhr.onload = function() {
         if ( callback && typeof( callback ) === 'function' ) {
-            callback( this.responseXML );
+            callback( this.responseXML, obj );
         }
     }
 

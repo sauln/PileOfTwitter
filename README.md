@@ -7,9 +7,10 @@ Our advanced AI based blockchain technology will annotate twitter users' names w
 
 # TODO
 
-- Cache user score so if they appear multiple times, we don't have to recalculate score.
-  - Base user name on handle.
-  - After certain time, do recalculate.
-- Test more complex scoring algorithms.
-- Write tests.
+- Better Cache
+  - Store cache in cookie (or something, idk) so its persistent for the user
+  - Invalidate cache after certain time
+- Test more complex scoring algorithms (duh sentiment analysis 101).
+- Write tests (mocha, wtf, idk).
 - Properly handle quote tweets and promotional tweets.
+- Work on user page (only tested on timeline right now).

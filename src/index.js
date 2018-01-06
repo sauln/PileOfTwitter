@@ -5,9 +5,8 @@ console.log("Begin Smearing");
 stream = document.querySelector(".stream");
 
 allTweeters = stream.querySelectorAll(".account-group");
+console.log("Compute ShitScore for " + allTweeters.length + " accounts.");
 
-allTweeters.forEach(smear.smearUser);
-
-// smear.smearUser(fullUser);
+allTweeters.forEach(smear.checkUser);
 
 console.log("Finish Smearing");

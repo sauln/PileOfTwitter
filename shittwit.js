@@ -185,21 +185,6 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],2:[function(require,module,exports){
-var smear = require('./smear.js');
-
-console.log("Begin Smearing");
-
-stream = document.querySelector(".stream");
-
-allTweeters = stream.querySelectorAll(".account-group");
-
-allTweeters.forEach(smear.smearUser);
-
-// smear.smearUser(fullUser);
-
-console.log("Finish Smearing");
-
-},{"./smear.js":6}],3:[function(require,module,exports){
 module.exports={
     "😂": 1,
     "❤": 3,
@@ -4351,7 +4336,7 @@ module.exports={
     "zealots": -2,
     "zealous": 2
 }
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function (process){
 var afinn = require('../build/build.json');
 var tokenize = require('./tokenize');
@@ -4438,7 +4423,7 @@ module.exports = function (phrase, inject, callback) {
 };
 
 }).call(this,require('_process'))
-},{"../build/build.json":3,"./tokenize":5,"_process":1}],5:[function(require,module,exports){
+},{"../build/build.json":2,"./tokenize":4,"_process":1}],4:[function(require,module,exports){
 /*eslint no-useless-escape: "off"*/
 
 /**
@@ -4454,11 +4439,32 @@ module.exports = function(input) {
         .split(' ');
 };
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
+var smear = require('./smear.js');
+
+console.log("Begin Smearing");
+
+stream = document.querySelector(".stream");
+
+allTweeters = stream.querySelectorAll(".account-group");
+console.log("Compute ShitScore for " + allTweeters.length + " accounts.");
+
+allTweeters.forEach(smear.checkUser);
+
+console.log("Finish Smearing");
+
+},{"./smear.js":6}],6:[function(require,module,exports){
 var sentiment = require('sentiment');
 var utils = require('./utils.js');
 
-var addPoo = function (fullnameSpan) {
+var THRESHOLD = 1;
+
+
+// Store (user-id: ShitScore).
+// eventually put in longer term memory somewhere.
+var userCache = new Object();
+
+var addPoo = function(fullnameSpan) {
   // Add poop emoji to the twitter user
 
   pooBadge = '<span class="Emoji Emoji--forLinks" style="background-image:url(\'https://abs.twimg.com/emoji/v2/72x72/1f4a9.png\')" title="Pile of poo" aria-label="Emoji: Pile of poo">&nbsp;</span><span class="visuallyhidden" aria-hidden="true">💩</span>';
@@ -4466,11 +4472,12 @@ var addPoo = function (fullnameSpan) {
   fullnameSpan.innerHTML = pooBadge + fullnameSpan.innerHTML + pooBadge;
 };
 
-var tweetToText = function (tweet) {
+var tweetToText = function(tweet) {
+  // I reserve the right to do something more complex this
   return tweet.innerText.toString();
 }
 
-var generateScore = function (userContent) {
+var generateScore = function(userContent) {
   // Process raw tweets and generate an average score
 
   tweets = userContent.querySelectorAll(".tweet-text");
@@ -4486,25 +4493,77 @@ var generateScore = function (userContent) {
   return score;
 };
 
-exports.smearUser = function (fullUser) {
-  // Access user tweets, compute a sentiment score, and then smear
-  // user if score is low enough.
+var smearUser = function(userPage, tweetScore) {
 
-  var href = fullUser.href;
+  // This threshold is very dependent on the method of scoring
+  // TODO: Make the threshold user tunable.
+  if (tweetScore <= THRESHOLD) {
 
-  var parseContent = function (userPage) {
-    var tweetScore = generateScore(userPage);
+    username = userPage.querySelector(".fullname");
+    console.log("Smear user " + username.innerHTML);
+    // console.dir(username);
+    addPoo(username);
+    // console.log("The username is after: " + username.innerHTML);
+  }
 
-    if (tweetScore <= 0) {
-      username = userPage.querySelector(".fullname");
-      addPoo(username);
-    }
-  };
-
-  utils.getHTML(href, parseContent);
 };
 
-},{"./utils.js":7,"sentiment":4}],7:[function(require,module,exports){
+exports.checkUser = function(userInfo) {
+  // Access user tweets, compute a sentiment score, and then smear
+  // user if score is low enough.
+  // Input: <a class="account-group"> html content
+
+
+  // need to do something different for quote tweets and promotional tweets:
+  if (userInfo.classList.contains("QuoteTweet-innerContainer")) {
+    // Href is handled differently if its a quote tweet. We should skip them for now.
+
+    console.log("This is a quote tweet.  Handle it differently:" + userInfo);
+
+  } else if (userInfo.hasOwnProperty("data-impression-cookie") ){
+
+    console.log("Is this a promotional tweet? " + userInfo)
+
+  } else {
+
+
+    var user = userInfo.getAttribute("href");
+    var href = userInfo.href;
+
+    // Get user key -- use data-user-id
+    var userID = userInfo.getAttribute("data-user-id");
+
+    // Check cache
+    if (userID in userCache) {
+      // If we have the score, we will user it
+
+      console.log("Found user score for " + user + "cached: " + userCache[userID]);
+
+      utils.getHTML(href, function(userPage) {
+        smearUser(userInfo, userCache[userID]);
+      });
+
+    } else {
+      // otherwise, generate the score
+
+      console.log("Compute user score for " + user);
+
+      utils.getHTML(href, function(userPage) {
+
+        console.log("Generate score for: " + userPage.URL);
+        var tweetScore = generateScore(userPage);
+
+        // console.log("Cache score and try smearing");
+        userCache[userID] = tweetScore;
+        smearUser(userInfo, tweetScore);
+      });
+    }
+
+  }
+
+};
+
+},{"./utils.js":7,"sentiment":3}],7:[function(require,module,exports){
 exports.getHTML = function ( url, callback ) {
 
     // Feature detection
@@ -4527,4 +4586,4 @@ exports.getHTML = function ( url, callback ) {
 
 };
 
-},{}]},{},[2]);
+},{}]},{},[5]);

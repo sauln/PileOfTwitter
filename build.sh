@@ -1,1 +1,1 @@
-browserify index.js > shittwit.js
+browserify src/index.js > shittwit.js

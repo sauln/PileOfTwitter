@@ -1,3 +1,4 @@
+
 var LOG = false;
 
 
@@ -8,18 +9,21 @@ module.exports = {
       console.log("Check if " + key + " is in the cache");
     }
 
+    // yes, this is redundant. but it is clear. especially when you don't totally understand JS truthy stuft
     if (key in this) {
       return true;
     } else {
       return false;
     }
   },
+
   getValue: function (key) {
     if (LOG) {
       console.log("Get value of " + key + " from the cache: " + this[key]);
     }
     return this[key];
   },
+
   addToCache: function (key, value) {
     if (LOG) {
       console.log("Add (" + key + ":" + value + ") to the cache");

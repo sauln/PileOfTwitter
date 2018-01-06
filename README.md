@@ -14,3 +14,8 @@ Our advanced AI based blockchain technology will annotate twitter users' names w
 - Write tests (mocha, wtf, idk).
 - Properly handle quote tweets and promotional tweets.
 - Work on user page (only tested on timeline right now).
+- Allow user to set ShitScore&trade; threshold.
+
+# LICENSE
+
+We have a very large legal team and if you try to steal anything then we'll get all Medusa on you so back off.

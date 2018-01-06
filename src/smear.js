@@ -5,6 +5,9 @@ var userCache = require('./userCache.js');
 var THRESHOLD = 0.5;
 var LOG = false;
 
+// TODO: I want to wrap all these functions into an object, but they can't call
+// each other.. this is window. How do you do this properly?
+
 
 var addPoo =  function(fullnameSpan) {
   // Add poop emoji to the twitter user
@@ -104,19 +107,15 @@ exports.checkUser = function(userInfo) {
       // otherwise, generate the score
       utils.getHTML(href, function(userPage) {
 
-        if (LOG) {
-
-        }
-
         // we should check cache again right here in case we've done this before
         if (userCache.isInCache(userID)) {
           smearUser(userInfo, userCache.getValue(userID));
         } else {
+
           var tweetScore = generateScore(userPage);
 
           if (LOG) {
-            console.log(" ---- generate score: ");
-            console.log("  --------- " + tweetScore);
+            console.log(" ---- generated score: " + tweetScore);
           }
 
           userCache.addToCache(userID, tweetScore);

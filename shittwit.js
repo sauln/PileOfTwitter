@@ -4457,14 +4457,40 @@ var sentiment = require('sentiment');
 var utils = require('./utils.js');
 var userCache = require('./userCache.js');
 
-var THRESHOLD = 0.5;
+var THRESHOLD = 1;
 var LOG = false;
 
 // TODO: I want to wrap all these functions into an object, but they can't call
-// each other.. this is window. How do you do this properly?
+// each other.. `this` is window. How do you do this properly?
 
+function badScore(score) {
+  // This threshold is very dependent on the method of scoring
+  // TODO: Make the threshold user tunable.
+  return score <= THRESHOLD;
+}
+function alreadySmeared(userPage) {
+  // Check if the user has already been smeared (dont want new poos every refresh)
+  return userPage.classList.contains("smeared")
+}
 
-var addPoo =  function(fullnameSpan) {
+function computeAverage(list, operation){
+  // Convert the average value of list given the operation on each element
+
+  if (! Array.isArray(list)){
+    list = Array.from(list);
+  }
+
+  var sum = list.reduce(function(total, item) {
+    var score = operation(item);
+    return total + score;
+  }, 0);
+
+  var score = sum / list.length;
+
+  return score;
+}
+
+var addPoo = function(fullnameSpan) {
   // Add poop emoji to the twitter user
 
   pooBadge = '<span class="Emoji Emoji--forLinks" style="background-image:url(\'https://abs.twimg.com/emoji/v2/72x72/1f4a9.png\')" title="Pile of poo" aria-label="Emoji: Pile of poo">&nbsp;</span><span class="visuallyhidden" aria-hidden="true">💩</span>';
@@ -4472,7 +4498,7 @@ var addPoo =  function(fullnameSpan) {
   fullnameSpan.innerHTML = pooBadge + fullnameSpan.innerHTML + pooBadge;
 }
 
-var tweetToText =  function(tweet) {
+var tweetToText = function(tweet) {
   if (LOG) {
     console.log(" -----> ------> convert tweet to text");
   }
@@ -4480,7 +4506,7 @@ var tweetToText =  function(tweet) {
   return tweet.innerText.toString();
 }
 
-var generateScore =  function(userContent) {
+var generateScore = function(userContent) {
   // Process raw tweets and generate an average score
 
   if (LOG) {
@@ -4488,103 +4514,115 @@ var generateScore =  function(userContent) {
   }
   tweets = userContent.querySelectorAll(".tweet-text");
 
-  // Compute average score
-  var sum = [].reduce.call(tweets, function(total, tweet) {
-    // console.log(" a " + this + " and " + tweetToText);
-    var score = sentiment(tweetToText(tweet))["score"];
-    return total + score;
-  }, 0);
+  function computeScore(tweet) {
+    return sentiment(tweetToText(tweet))["score"];
+  }
 
-  var score = sum / tweets.length;
+  var score = computeAverage(tweets, computeScore);
 
   if (LOG) {
     console.log("    score found: " + score);
   }
   return score;
-}
+};
 
 var smearUser = function(userPage, tweetScore) {
 
-  // This threshold is very dependent on the method of scoring
-  // TODO: Make the threshold user tunable.
-  if (tweetScore <= THRESHOLD) {
+  if (badScore(tweetScore) && !alreadySmeared(userPage)) {
 
     username = userPage.querySelector(".fullname");
 
-    console.log("Score " + tweetScore + " - smear user " + username.innerHTML);
-
-
-    if (!userPage.classList.contains("smeared")) {
-      userPage.classList.add("smeared");
-      addPoo(username);
+    if (LOG) {
+      console.log(" -- Scored " + tweetScore + " - smear user " + username.innerHTML);
     }
-  }
-}
 
+    userPage.classList.add("smeared");
+    addPoo(username);
+
+  }
+};
 
 exports.checkUser = function(userInfo) {
   // Access user tweets, compute a sentiment score, and then smear
   // user if score is low enough.
   // Input: <a class="account-group"> html content
 
-  // need to do something different for quote tweets and promotional tweets:
-  if (userInfo.classList.contains("QuoteTweet-innerContainer") || userInfo.classList.contains("QuoteTweet-originalAuthor")) {
-    // Href is handled differently if its a quote tweet. We should skip them for now.
-    if (LOG) {
-      console.log("        tweet is quote tweet - ignore")
-    }
+  var user = userInfo.getAttribute("href");
+  var href = userInfo.href;
 
-  } else if (userInfo.hasOwnProperty("data-impression-cookie")) {
-    // Href is handled differently if it is a promoted tweet.
-    if (LOG) {
-      console.log("  <--- tweet is advertisement - ignore")
-    }
-  } else {
-
-    var user = userInfo.getAttribute("href");
-    var href = userInfo.href;
-
-    if (LOG) {
-      console.log("  <--- smear user " + user);
-    }
-
-    // Get user key -- use data-user-id
-    var userID = userInfo.getAttribute("data-user-id");
-
-    // Check cache
-    if (userCache.isInCache(userID)) {
-      // first pass through, nothing is in the cache because the getHTML is too slow, every user check beats it
-      // If we have the score, we will user it
-
-      smearUser(userInfo, userCache.getValue(userID));
-    } else {
-      // otherwise, generate the score
-      utils.getHTML(href, function(userPage) {
-
-        // we should check cache again right here in case we've done this before
-        if (userCache.isInCache(userID)) {
-          smearUser(userInfo, userCache.getValue(userID));
-        } else {
-
-          var tweetScore = generateScore(userPage);
-
-          if (LOG) {
-            console.log(" ---- generated score: " + tweetScore);
-          }
-
-          userCache.addToCache(userID, tweetScore);
-          smearUser(userInfo, tweetScore);
-        }
-      });
-    }
+  if (LOG) {
+    console.log("  <--- smear user " + user);
   }
 
+  // Get user key -- use data-user-id
+  var userID = userInfo.getAttribute("data-user-id");
+
+  // Check cache
+  if (userCache.isInCache(userID)) {
+    // first pass through, nothing is in the cache because the getHTML is too slow, every user check beats it
+    // If we have the score, we will user it
+    if (LOG) {
+      console.log("User cached score of " + userCache.getValue(userID) + " for " + user);
+    }
+
+    smearUser(userInfo, userCache.getValue(userID));
+  } else {
+
+    function processPage(userPage) {
+      /// WARNING: there are lots of values closed into this function.
+
+      if (userCache.isInCache(userID)) {
+        // we should check cache again right here in case we've done this before
+        // fetching page takes long enough that we might have caught up.
+        // Don't want to go through the trouble of computing the score too many times.
+        smearUser(userInfo, userCache.getValue(userID));
+      } else {
+
+        var tweetScore = generateScore(userPage);
+
+        if (LOG) {
+          console.log(" ---- generated score: " + tweetScore);
+        }
+
+        userCache.addToCache(userID, tweetScore);
+        smearUser(userInfo, tweetScore);
+      }
+    }
+
+    // otherwise, generate the score
+    utils.getHTML(href, processPage);
+  }
 }
 
 },{"./userCache.js":8,"./utils.js":9,"sentiment":3}],7:[function(require,module,exports){
 var smear = require('./smear.js');
 
-var LOG = false;
+var LOG = true;
+
+function clearBadUsers(tweeter) {
+  // We currently don't handle any of these special varieties of tweets that show up in our
+  //  initial query:
+  //      quoted tweets
+  //      promotional tweets
+  //      WhoToFollow suggestions
+
+  function isQuoteTweet(tweeter) {
+    return tweeter.classList.contains("QuoteTweet-innerContainer") ||
+           tweeter.classList.contains("QuoteTweet-originalAuthor") ;
+  }
+  function isPromotion(tweeter) {
+    return tweeter.hasOwnProperty("data-impression-cookie");
+  }
+  function isWhoToFollow(tweeter) {
+    return tweeter.classList.contains("ProfileNameTruncated");
+  }
+
+  return !isQuoteTweet(tweeter) && !isPromotion(tweeter) && !isWhoToFollow(tweeter);
+}
+
+
+
+
 
 module.exports = {
   smearedTweets: [],
@@ -4597,16 +4635,14 @@ module.exports = {
     if (newAllTweets.length > this.smearedTweets.length){
       if (LOG) {
         console.log("Run smear campaign on new tweets, was " + this.smearedTweets.length + " and now " + newAllTweets.length);
-
       }
 
       newTweets = this.addNewTweets(newAllTweets);
-      console.log("There are " + newAllTweets.length + " new tweets");
 
       this.smear(newTweets);
     } else {
       if (LOG) {
-        console.log("Already smeared everyone, carry on");
+        console.log("--- All " + newAllTweets.length + " tweets processed.");
       }
     }
   },
@@ -4618,11 +4654,9 @@ module.exports = {
     stream = document.querySelector(".stream");
     allTweeters = stream.querySelectorAll(".account-group");
 
-    if (LOG){
-      console.log("Found " + allTweeters.length + " tweets to examine");
-    }
+    var usableTweeters = Array.from(allTweeters).filter(clearBadUsers);
 
-    return allTweeters;
+    return usableTweeters;
   },
 
   addNewTweets: function (newTweets) {
@@ -4642,7 +4676,7 @@ module.exports = {
   },
 
   smear: function (allTweeters) {
-    console.log("   Compute ShitScore for " + allTweeters.length + " accounts.");
+    console.log("--- Update: Compute ShitScore for " + allTweeters.length + " accounts ---");
     allTweeters.forEach(smear.checkUser);
   }
 };
@@ -4652,14 +4686,17 @@ module.exports = {
 var LOG = false;
 
 
+/// Currently, this is a wrapper around an Object.
+/// Eventually we need to throw this in a cookie or something.
+
 module.exports = {
-  cache: new Object(),
+  cache: new Object(), // TODO: Is this `new` done correctly?
   isInCache: function (key) {
     if (LOG) {
       console.log("Check if " + key + " is in the cache");
     }
 
-    // yes, this is redundant. but it is clear. especially when you don't totally understand JS truthy stuft
+    // yes, this is redundant. but it is clear. especially when you don't totally understand JS truthy stuff
     if (key in this) {
       return true;
     } else {

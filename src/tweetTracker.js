@@ -1,6 +1,31 @@
 var smear = require('./smear.js');
 
-var LOG = false;
+var LOG = true;
+
+function clearBadUsers(tweeter) {
+  // We currently don't handle any of these special varieties of tweets that show up in our
+  //  initial query:
+  //      quoted tweets
+  //      promotional tweets
+  //      WhoToFollow suggestions
+
+  function isQuoteTweet(tweeter) {
+    return tweeter.classList.contains("QuoteTweet-innerContainer") ||
+           tweeter.classList.contains("QuoteTweet-originalAuthor") ;
+  }
+  function isPromotion(tweeter) {
+    return tweeter.hasOwnProperty("data-impression-cookie");
+  }
+  function isWhoToFollow(tweeter) {
+    return tweeter.classList.contains("ProfileNameTruncated");
+  }
+
+  return !isQuoteTweet(tweeter) && !isPromotion(tweeter) && !isWhoToFollow(tweeter);
+}
+
+
+
+
 
 module.exports = {
   smearedTweets: [],
@@ -13,16 +38,14 @@ module.exports = {
     if (newAllTweets.length > this.smearedTweets.length){
       if (LOG) {
         console.log("Run smear campaign on new tweets, was " + this.smearedTweets.length + " and now " + newAllTweets.length);
-
       }
 
       newTweets = this.addNewTweets(newAllTweets);
-      console.log("There are " + newAllTweets.length + " new tweets");
 
       this.smear(newTweets);
     } else {
       if (LOG) {
-        console.log("Already smeared everyone, carry on");
+        console.log("--- All " + newAllTweets.length + " tweets processed.");
       }
     }
   },
@@ -34,11 +57,9 @@ module.exports = {
     stream = document.querySelector(".stream");
     allTweeters = stream.querySelectorAll(".account-group");
 
-    if (LOG){
-      console.log("Found " + allTweeters.length + " tweets to examine");
-    }
+    var usableTweeters = Array.from(allTweeters).filter(clearBadUsers);
 
-    return allTweeters;
+    return usableTweeters;
   },
 
   addNewTweets: function (newTweets) {
@@ -58,7 +79,7 @@ module.exports = {
   },
 
   smear: function (allTweeters) {
-    console.log("   Compute ShitScore for " + allTweeters.length + " accounts.");
+    console.log("--- Update: Compute ShitScore for " + allTweeters.length + " accounts ---");
     allTweeters.forEach(smear.checkUser);
   }
 };

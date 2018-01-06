@@ -2,14 +2,17 @@
 var LOG = false;
 
 
+/// Currently, this is a wrapper around an Object.
+/// Eventually we need to throw this in a cookie or something.
+
 module.exports = {
-  cache: new Object(),
+  cache: new Object(), // TODO: Is this `new` done correctly?
   isInCache: function (key) {
     if (LOG) {
       console.log("Check if " + key + " is in the cache");
     }
 
-    // yes, this is redundant. but it is clear. especially when you don't totally understand JS truthy stuft
+    // yes, this is redundant. but it is clear. especially when you don't totally understand JS truthy stuff
     if (key in this) {
       return true;
     } else {

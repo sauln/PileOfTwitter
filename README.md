@@ -32,23 +32,24 @@ Finally, add the extension temporarily to your browser. For firefox, go to `abou
 Scope:
 -----
 
-- [ ] Play around with more complex scoring algorithms (duh sentiment analysis 101).
+- [ ] Properly work when viewing user page (only tested on timeline right now).
+- [ ] Play around with more complex scoring algorithms (this was the whole point of this project).
+- [ ] Allow user to set ShitScore™ threshold.
 - [ ] Properly handle quote tweets
 - [ ] Properly handle promotional tweets.
 - [ ] Properly handle retweets and likes (currently doesnt poo-annotate)
-- [ ] Properly work when viewing user page (only tested on timeline right now).
-- [ ] Allow user to set ShitScore™ threshold.
+
+
 
 Quality:
 ------
-
-- [ ] Better Cache
-  - [ ] Store cache in cookie (or something, idk) so its persistent for the user
+- Caching
+  - [ ] Store cache in cookie (or something else long term) so its persistent for the user persistent for the user
   - [ ] Invalidate cache after certain time
-- [ ] **Write unit tests** (mocha, wtf, idk).
+- [ ] **Write unit tests** (mocha?).
 - [ ] **Test on other browsers** (firefox only so far)
-- [ ] Proper setup for node stuff?
+- [ ] Proper setup for node stuff? Is there a requirements.txt equivalent?
 
 # LICENSE
 
-We have a very large legal team and if you try to steal anything then we'll get all Montezuma on ya so back off.
+We have a very large legal team and if you try to steal anything then we'll get all up on ya. So back off. Unless you ask first.

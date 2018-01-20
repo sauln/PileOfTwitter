@@ -1,39 +1,61 @@
-
 var LOG = false;
+console.log("----- trace ----- run new userCache");
 
+function dumpStorage(cache) {
+  console.log(Object.keys(cache));
+}
 
-/// Currently, this is a wrapper around an Object.
-/// Eventually we need to throw this in a cookie or something.
+var cache = function() {
+  if (!localStorage.getItem('twitCache')) {
+    console.log("First time use, no cache in localStorage");
+    return new Object();
+  } else {
+    console.log("Load cache from localStorage");
+    st = JSON.parse(localStorage.getItem('twitCache'));
 
+    dumpStorage(st);
+    return st;
+  }
+}();
+
+function saveCache(cache) {
+  // console.log("Store the localStorage");
+  dumpStorage(cache);
+  localStorage.setItem('twitCache', JSON.stringify(cache));
+}
+
+window.onbeforeunload = saveCache;
+
+// This is a singleton that operates on the cache
 module.exports = {
-  cache: new Object(), // TODO: Is this `new` done correctly?
-  isInCache: function (key) {
+  isInCache: function(key) {
     if (LOG) {
       console.log("Check if " + key + " is in the cache");
+      dumpStorage(cache);
     }
 
-    // yes, this is redundant. but it is clear. especially when you don't totally understand JS truthy stuff
-    if (key in this) {
+    if (key in cache) {
+      // console.log("Yes in cache");
       return true;
     } else {
+      // console.log("Not in cache");
       return false;
     }
   },
 
-  getValue: function (key) {
+  getValue: function(key) {
     if (LOG) {
-      console.log("Get value of " + key + " from the cache: " + this[key]);
+      console.log("Get value of " + key + " from the cache: " + cache[key]);
     }
-    return this[key];
+    return cache[key];
   },
 
-  addToCache: function (key, value) {
+  addToCache: function(key, value) {
     if (LOG) {
       console.log("Add (" + key + ":" + value + ") to the cache");
     }
-    this[key] = value;
-  },
-  checkKeys: function() {
-    console.log(Object.keys(userCache));
+    cache[key] = value;
+    saveCache(cache);
   }
+
 };

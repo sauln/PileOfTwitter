@@ -29,6 +29,13 @@ Finally, add the extension temporarily to your browser. For firefox, go to `abou
 
 # TODO
 
+Major rehashes:
+---------------
+
+- [ ] Convert to using twitter API instead of parsing HTML. I believe this can only work for certain pieces.
+- [ ] Store cache in persistent storage. Use localStorage.
+
+
 Scope:
 -----
 

@@ -29,30 +29,19 @@ Finally, add the extension temporarily to your browser. For firefox, go to `abou
 
 # TODO
 
-## Major rehashes:
-
 - [ ] Convert to using twitter API instead of parsing HTML. I believe this can only work for certain pieces.
-- [ ] Store cache in persistent storage. Use localStorage.
-
-## Scope:
-
-- [ ] Properly work when viewing user page (only tested on timeline right now).
-- [ ] Play around with more complex scoring algorithms (this was the whole point of this project).
-- [ ] Allow user to set ShitScore™ threshold.
+- [X] Store cache in persistent storage. Use localStorage.
+- [ ] Get options page working so user can set their own threshold.
+- [ ] Come up with new name and clean out the word "Shit"
+- [ ] Remove sses of 'innerHTML'.
+- [ ] Handle user page (only tested on timeline right now).
 - [ ] Properly handle quote tweets
 - [ ] Properly handle promotional tweets.
-- [ ] Properly handle retweets and likes (currently doesnt poo-annotate)
-
-## Quality:
-
-- Caching
-
-  - [ ] Store cache in cookie (or something else long term) so its persistent for the user persistent for the user
-  - [ ] Invalidate cache after certain time
-
+- [ ] Properly handle retweets and likes (currently doesn't poo-annotate)
+- [ ] Invalidate cache after certain time
 - [ ] **Write unit tests** (mocha?).
 - [ ] **Test on other browsers** (firefox only so far)
-- [ ] Proper setup for node stuff? Is there a requirements.txt equivalent?
+- [ ] Proper setup for node stuff? Is there a requirements.txt equivalent? Should I include the node_modules in the zip?
 
 # LICENSE
 

@@ -1,7 +1,5 @@
 function saveOptions(e) {
-  browser.storage.sync.set({
-    threshold: document.querySelector("#threshold").value
-  });
+  browser.storage.sync.set({threshold: document.querySelector("#threshold").value});
   e.preventDefault();
 }
 

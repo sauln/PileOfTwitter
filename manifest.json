@@ -2,18 +2,14 @@
   "manifest_version": 2,
   "name": "ShitTwit",
   "version": "0.0.2",
-
-  "description": "Add a poo emoji to the names of shitheads on twitter",
+  "description": "Add a poo emoji to the names of twitter meanies.",
   "icons": {
     "48": "icons/poo.png"
   },
-
-  "content_scripts": [
-    {
-      "matches": ["*://*.twitter.com/*"],
-      "js": ["shittwit.js"]
-    }
-  ],
+  "content_scripts": [{
+    "matches": ["*://*.twitter.com/*"],
+    "js": ["shittwit.js"]
+  }],
   "options_ui": {
     "page": "src/options.html",
     "browser_style": true

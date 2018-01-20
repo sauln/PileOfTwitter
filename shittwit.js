@@ -4445,19 +4445,24 @@ var tracker = require("./tweetTracker.js");
 tracker.update();
 
 // Watch for page mutations, compute smear on these new tweets
-var obs = new MutationObserver(function (mutations, observer) {
+var obs = new MutationObserver(function(mutations, observer) {
   // console.log("mutation trigger - update ----- ");
   tracker.update();
 });
 
-obs.observe(document.body, { childList: true, subtree: true, attributes: false, characterData: false });
+obs.observe(document.body, {
+  childList: true,
+  subtree: true,
+  attributes: false,
+  characterData: false
+});
 
 },{"./tweetTracker.js":7}],6:[function(require,module,exports){
 var sentiment = require('sentiment');
 var utils = require('./utils.js');
 var userCache = require('./userCache.js');
 
-var THRESHOLD = 1;
+var THRESHOLD = 0;
 var LOG = false;
 
 // TODO: I want to wrap all these functions into an object, but they can't call
@@ -4468,15 +4473,16 @@ function badScore(score) {
   // TODO: Make the threshold user tunable.
   return score <= THRESHOLD;
 }
+
 function alreadySmeared(userPage) {
   // Check if the user has already been smeared (dont want new poos every refresh)
   return userPage.classList.contains("smeared")
 }
 
-function computeAverage(list, operation){
+function computeAverage(list, operation) {
   // Convert the average value of list given the operation on each element
 
-  if (! Array.isArray(list)){
+  if (!Array.isArray(list)) {
     list = Array.from(list);
   }
 
@@ -4607,8 +4613,7 @@ function clearBadUsers(tweeter) {
   //      WhoToFollow suggestions
 
   function isQuoteTweet(tweeter) {
-    return tweeter.classList.contains("QuoteTweet-innerContainer") ||
-           tweeter.classList.contains("QuoteTweet-originalAuthor") ;
+    return tweeter.classList.contains("QuoteTweet-innerContainer") || tweeter.classList.contains("QuoteTweet-originalAuthor");
   }
   function isPromotion(tweeter) {
     return tweeter.hasOwnProperty("data-impression-cookie");
@@ -4620,19 +4625,15 @@ function clearBadUsers(tweeter) {
   return !isQuoteTweet(tweeter) && !isPromotion(tweeter) && !isWhoToFollow(tweeter);
 }
 
-
-
-
-
 module.exports = {
   smearedTweets: [],
 
-  update: function () {
+  update: function() {
     // query new tweets and if there are new ones, then smear them
 
     newAllTweets = this.getListOfPotentialTweets();
 
-    if (newAllTweets.length > this.smearedTweets.length){
+    if (newAllTweets.length > this.smearedTweets.length) {
       if (LOG) {
         console.log("Run smear campaign on new tweets, was " + this.smearedTweets.length + " and now " + newAllTweets.length);
       }
@@ -4647,7 +4648,7 @@ module.exports = {
     }
   },
 
-  getListOfPotentialTweets: function () {
+  getListOfPotentialTweets: function() {
     // query all stuff with the 'account-group' class - these are most of the tweets
     // there are some false positives that get dealt with down the line.
 
@@ -4659,11 +4660,11 @@ module.exports = {
     return usableTweeters;
   },
 
-  addNewTweets: function (newTweets) {
+  addNewTweets: function(newTweets) {
     // Figure out which ones are new, add them to the list, and return them
 
     if (LOG) {
-      console.log("  previously, "  + this.smearedTweets.length  + " tweets, adding " + (newTweets.length - this.smearedTweets.length) + " new tweets.");
+      console.log("  previously, " + this.smearedTweets.length + " tweets, adding " + (newTweets.length - this.smearedTweets.length) + " new tweets.");
     }
 
     var extras = [];
@@ -4675,51 +4676,73 @@ module.exports = {
     return extras;
   },
 
-  smear: function (allTweeters) {
+  smear: function(allTweeters) {
     console.log("--- Update: Compute ShitScore for " + allTweeters.length + " accounts ---");
     allTweeters.forEach(smear.checkUser);
   }
 };
 
 },{"./smear.js":6}],8:[function(require,module,exports){
-
 var LOG = false;
+console.log("----- trace ----- run new userCache");
 
+function dumpStorage(cache) {
+  console.log(Object.keys(cache));
+}
 
-/// Currently, this is a wrapper around an Object.
-/// Eventually we need to throw this in a cookie or something.
+var cache = function() {
+  if (!localStorage.getItem('twitCache')) {
+    console.log("First time use, no cache in localStorage");
+    return new Object();
+  } else {
+    console.log("Load cache from localStorage");
+    st = JSON.parse(localStorage.getItem('twitCache'));
 
+    dumpStorage(st);
+    return st;
+  }
+}();
+
+function saveCache(cache) {
+  // console.log("Store the localStorage");
+  dumpStorage(cache);
+  localStorage.setItem('twitCache', JSON.stringify(cache));
+}
+
+window.onbeforeunload = saveCache;
+
+// This is a singleton that operates on the cache
 module.exports = {
-  cache: new Object(), // TODO: Is this `new` done correctly?
-  isInCache: function (key) {
+  isInCache: function(key) {
     if (LOG) {
       console.log("Check if " + key + " is in the cache");
+      dumpStorage(cache);
     }
 
-    // yes, this is redundant. but it is clear. especially when you don't totally understand JS truthy stuff
-    if (key in this) {
+    if (key in cache) {
+      // console.log("Yes in cache");
       return true;
     } else {
+      // console.log("Not in cache");
       return false;
     }
   },
 
-  getValue: function (key) {
+  getValue: function(key) {
     if (LOG) {
-      console.log("Get value of " + key + " from the cache: " + this[key]);
+      console.log("Get value of " + key + " from the cache: " + cache[key]);
     }
-    return this[key];
+    return cache[key];
   },
 
-  addToCache: function (key, value) {
+  addToCache: function(key, value) {
     if (LOG) {
       console.log("Add (" + key + ":" + value + ") to the cache");
     }
-    this[key] = value;
-  },
-  checkKeys: function() {
-    console.log(Object.keys(userCache));
+    cache[key] = value;
+    saveCache(cache);
   }
+
 };
 
 },{}],9:[function(require,module,exports){

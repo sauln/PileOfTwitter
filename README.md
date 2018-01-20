@@ -7,16 +7,19 @@ Our advanced AI based blockchain technology will annotate twitter users' names w
 # Setup
 
 You'll need browserify to build everything
+
 ```
 npm install browserify -g
 ```
 
 and you'll need the sentiment library
+
 ```
 npm install sentiment
 ```
 
 Then you can run the build script:
+
 ```
 chomd a+x build.sh
 ./build.sh
@@ -24,20 +27,14 @@ chomd a+x build.sh
 
 Finally, add the extension temporarily to your browser. For firefox, go to `about:debugging`, click `Load Temporary Add-on` and select the manifest.json file. Then navigate to any twitter page and behold.
 
-
-
-
 # TODO
 
-Major rehashes:
----------------
+## Major rehashes:
 
 - [ ] Convert to using twitter API instead of parsing HTML. I believe this can only work for certain pieces.
 - [ ] Store cache in persistent storage. Use localStorage.
 
-
-Scope:
------
+## Scope:
 
 - [ ] Properly work when viewing user page (only tested on timeline right now).
 - [ ] Play around with more complex scoring algorithms (this was the whole point of this project).
@@ -46,13 +43,13 @@ Scope:
 - [ ] Properly handle promotional tweets.
 - [ ] Properly handle retweets and likes (currently doesnt poo-annotate)
 
+## Quality:
 
-
-Quality:
-------
 - Caching
+
   - [ ] Store cache in cookie (or something else long term) so its persistent for the user persistent for the user
   - [ ] Invalidate cache after certain time
+
 - [ ] **Write unit tests** (mocha?).
 - [ ] **Test on other browsers** (firefox only so far)
 - [ ] Proper setup for node stuff? Is there a requirements.txt equivalent?

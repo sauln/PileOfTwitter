@@ -10,8 +10,7 @@ function clearBadUsers(tweeter) {
   //      WhoToFollow suggestions
 
   function isQuoteTweet(tweeter) {
-    return tweeter.classList.contains("QuoteTweet-innerContainer") ||
-           tweeter.classList.contains("QuoteTweet-originalAuthor") ;
+    return tweeter.classList.contains("QuoteTweet-innerContainer") || tweeter.classList.contains("QuoteTweet-originalAuthor");
   }
   function isPromotion(tweeter) {
     return tweeter.hasOwnProperty("data-impression-cookie");
@@ -23,19 +22,15 @@ function clearBadUsers(tweeter) {
   return !isQuoteTweet(tweeter) && !isPromotion(tweeter) && !isWhoToFollow(tweeter);
 }
 
-
-
-
-
 module.exports = {
   smearedTweets: [],
 
-  update: function () {
+  update: function() {
     // query new tweets and if there are new ones, then smear them
 
     newAllTweets = this.getListOfPotentialTweets();
 
-    if (newAllTweets.length > this.smearedTweets.length){
+    if (newAllTweets.length > this.smearedTweets.length) {
       if (LOG) {
         console.log("Run smear campaign on new tweets, was " + this.smearedTweets.length + " and now " + newAllTweets.length);
       }
@@ -50,7 +45,7 @@ module.exports = {
     }
   },
 
-  getListOfPotentialTweets: function () {
+  getListOfPotentialTweets: function() {
     // query all stuff with the 'account-group' class - these are most of the tweets
     // there are some false positives that get dealt with down the line.
 
@@ -62,11 +57,11 @@ module.exports = {
     return usableTweeters;
   },
 
-  addNewTweets: function (newTweets) {
+  addNewTweets: function(newTweets) {
     // Figure out which ones are new, add them to the list, and return them
 
     if (LOG) {
-      console.log("  previously, "  + this.smearedTweets.length  + " tweets, adding " + (newTweets.length - this.smearedTweets.length) + " new tweets.");
+      console.log("  previously, " + this.smearedTweets.length + " tweets, adding " + (newTweets.length - this.smearedTweets.length) + " new tweets.");
     }
 
     var extras = [];
@@ -78,7 +73,7 @@ module.exports = {
     return extras;
   },
 
-  smear: function (allTweeters) {
+  smear: function(allTweeters) {
     console.log("--- Update: Compute ShitScore for " + allTweeters.length + " accounts ---");
     allTweeters.forEach(smear.checkUser);
   }

@@ -2,7 +2,7 @@ var sentiment = require('sentiment');
 var utils = require('./utils.js');
 var userCache = require('./userCache.js');
 
-var THRESHOLD = 1;
+var THRESHOLD = 0;
 var LOG = false;
 
 // TODO: I want to wrap all these functions into an object, but they can't call
@@ -13,15 +13,16 @@ function badScore(score) {
   // TODO: Make the threshold user tunable.
   return score <= THRESHOLD;
 }
+
 function alreadySmeared(userPage) {
   // Check if the user has already been smeared (dont want new poos every refresh)
   return userPage.classList.contains("smeared")
 }
 
-function computeAverage(list, operation){
+function computeAverage(list, operation) {
   // Convert the average value of list given the operation on each element
 
-  if (! Array.isArray(list)){
+  if (!Array.isArray(list)) {
     list = Array.from(list);
   }
 

@@ -25,7 +25,7 @@ npm install sentiment
 Then you can run the build script:
 
 ```
-chomd a+x build.sh
+chmod a+x build.sh
 ./build.sh
 ```
 
